@@ -1,5 +1,5 @@
 MAX_LOOP = 3
-MODEL = "qwen"
+MODEL = "gemini"
 
 [models.minmax]
 provider = "MinMax"
@@ -12,7 +12,7 @@ max_tokens = 10000
 [models.gemini]
 provider = "Gemini"
 url = "https://generativelanguage.googleapis.com/v1beta/"
-api = "GOOGLE_AI_STUDIO_2"
+api = "GOOGLE_AI_STUDIO"
 name = "gemini-3-flash-preview"
 temperature = 0.3
 max_tokens = 10000
