@@ -1,4 +1,9 @@
-from functions.get_file_info import get_dir_info
+from functions.get_file_info import schema_get_file_info
+from functions.get_file_content import schema_get_file_content
+from functions.run_python_file import schema_run_python_file
+from functions.write_file import schema_write_file
+from call_function import call_function
+from prompts import sys_prompt
 from openai import OpenAI
 import tomllib
 from dotenv import load_dotenv
@@ -20,29 +25,41 @@ def main():
         api_key = os.getenv(model_config['api'])
     )
 
+    print(sys.argv)
     if len(sys.argv) < 2:
         print("I need a prompt.")
         sys.exit(1)
-    verbose = False
+    verbose_flag = False
     if len(sys.argv) == 3 and sys.argv[2] ==  "--verbose":
-        verbose = True
+        verbose_flag = True
     prompt = sys.argv[1]
 
-    messages = [{"role": "user", "content": prompt}]
+    messages = [{"role":"system", "content":sys_prompt},{"role": "user", "content": prompt}]
+    # messages = [{"role": "user", "content": "what files is in the current directory?"}]
     response = client.chat.completions.create(
         model=model_config['name'],
-        messages = messages
+        messages = messages,
+        tools=[schema_get_file_info, schema_get_file_content, schema_run_python_file, schema_write_file],
+        tool_choice="auto"
     )
 
-    if verbose:
+    print(response)
+
+
+    if verbose_flag:
         print(f"User Prompt: {prompt}")
         print(f"Prompt Tokens: {response.usage.prompt_tokens}")
         print(f"Total Tokens: {response.usage.total_tokens}")       
 
-    print(response.choices[0].message.content)
+    if response.choices[0].message.tool_calls:
+        for tool_call in response.choices[0].message.tool_calls:
+            messages.append(tool_call.model_dump())
+            result = call_function(tool_call.function, verbose_flag)
+            result["tool_call_id"] = tool_call.id
+            messages.append(result)
+
+    print(f"\n\n{messages}")
 
 
-print(get_dir_info("calculator", "pkg"))
-
-# if __name__ == "__main__":
-    # main()
+if __name__ == "__main__":
+    main()

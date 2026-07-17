@@ -1,4 +1,6 @@
 MAX_LOOP = 3
+MAX_CHARS = 10000
+
 MODEL = "gemini"
 
 [models.minmax]
@@ -12,7 +14,7 @@ max_tokens = 10000
 [models.gemini]
 provider = "Gemini"
 url = "https://generativelanguage.googleapis.com/v1beta/"
-api = "GOOGLE_AI_STUDIO"
+api = "GOOGLE_AI_STUDIO_3"
 name = "gemini-3-flash-preview"
 temperature = 0.3
 max_tokens = 10000
