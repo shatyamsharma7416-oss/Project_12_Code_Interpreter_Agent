@@ -35,30 +35,43 @@ def main():
     prompt = sys.argv[1]
 
     messages = [{"role":"system", "content":sys_prompt},{"role": "user", "content": prompt}]
-    # messages = [{"role": "user", "content": "what files is in the current directory?"}]
-    response = client.chat.completions.create(
-        model=model_config['name'],
-        messages = messages,
-        tools=[schema_get_file_info, schema_get_file_content, schema_run_python_file, schema_write_file],
-        tool_choice="auto"
-    )
 
-    print(response)
+    max_iters = config["MAX_LOOP"]
+
+    for i in range(0, max_iters):
+        response = client.chat.completions.create(
+            model=model_config['name'],
+            messages = messages,
+            tools=[schema_get_file_info, schema_get_file_content, schema_run_python_file, schema_write_file],
+            tool_choice="auto"
+        )
+
+        print(response)
+        print("\n")
+        messages.append(response.choices[0].message)
 
 
-    if verbose_flag:
-        print(f"User Prompt: {prompt}")
-        print(f"Prompt Tokens: {response.usage.prompt_tokens}")
-        print(f"Total Tokens: {response.usage.total_tokens}")       
+        if verbose_flag:
+            print(f"User Prompt: {prompt}")
+            print(f"Prompt Tokens: {response.usage.prompt_tokens}")
+            print(f"Total Tokens: {response.usage.total_tokens}")       
 
-    if response.choices[0].message.tool_calls:
-        for tool_call in response.choices[0].message.tool_calls:
-            messages.append(tool_call.model_dump())
-            result = call_function(tool_call.function, verbose_flag)
-            result["tool_call_id"] = tool_call.id
-            messages.append(result)
+        if response.choices[0].message.tool_calls:
+            for tool_call in response.choices[0].message.tool_calls:
+                
 
-    print(f"\n\n{messages}")
+                result = call_function(tool_call.function, verbose_flag)
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": str(result)  # Ensure content is a string!
+                })
+
+        if response.choices[0].finish_reason == "stop":
+            break
+
+
+    print(f"\n{messages}")
 
 
 if __name__ == "__main__":

@@ -7,9 +7,9 @@ import json
 working_directory = "calculator"
 def call_function(function_call_part, verbose=False):
     if verbose:
-        print(f"Calling function: {function_call_part.name}({function_call_part.arguments})")
+        print(f"Calling function: {function_call_part.name}({function_call_part.arguments})\n")
     else:
-        print(f" - Calling function: {function_call_part.name}")
+        print(f" - Calling function: {function_call_part.name}\n")
 
     # 1. Safely parse the JSON string into a Python dictionary
     try:
